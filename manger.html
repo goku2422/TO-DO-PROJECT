@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>to-do manager</title>
+</head>
+<body>
+     <h2>Manager</h2>
+<form id="taskForm">
+  <input type="text" id="task" placeholder="Enter Task" required>
+  <input type="email" id="email" placeholder="Enter Email" required>
+  <input type="date" id="date" required>
+    <select id="category" required>
+    <option value="" disabled selected>Select Category</option>
+    <option value="Student">Student</option>
+    <option value="Fresher">Fresher</option>
+    <option value="Experienced">Experienced</option>
+  </select>
+  <input type="tel" id="mobile" placeholder=" Mobile Number" required pattern="[0-9]{10}">
+  <textarea id="address" placeholder=" Address" rows="4" required></textarea>
+  <button type="submit">Add Task</button>
+</form>
+
+<div id="taskList"></div>
+<button id="exitBtn">Exit (Clear All Tasks)</button>
+
+ <script>
+  const taskForm = document.getElementById('taskForm');
+  const taskList = document.getElementById('taskList');
+  const exitBtn = document.getElementById('exitBtn');
+
+  let editingIndex = null;
+
+  window.addEventListener('load', loadTasks);
+
+  taskForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const taskData = {
+      task: document.getElementById('task').value,
+      email: document.getElementById('email').value,
+      date: document.getElementById('date').value,
+      category: document.getElementById('category').value,
+      mobile: document.getElementById('mobile').value,
+      address: document.getElementById('address').value
+    };
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    if (editingIndex !== null) {
+      tasks[editingIndex] = taskData;
+      editingIndex = null;
+      taskForm.querySelector('button').innerText = "Add Task";
+    } else {
+      tasks.push(taskData);
+    }
+
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    taskForm.reset();
+    renderTasks();
+  });
+
+  function loadTasks() {
+    renderTasks();
+  }
+
+  function renderTasks() {
+    taskList.innerHTML = '';
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.forEach((task, index) => {
+      const taskItem = document.createElement('div');
+      taskItem.className = 'taskItem';
+      taskItem.innerHTML = `
+        <strong>Task:</strong> ${task.task} <br>
+        <strong>Email:</strong> ${task.email} <br>
+        <strong>Date:</strong> ${task.date} <br>
+        <strong>Category:</strong> ${task.category} <br>
+        <strong>Mobile:</strong> ${task.mobile} <br>
+        <strong>Address:</strong> ${task.address}
+        <div class="actions">
+          <button onclick="editTask(${index})">Edit</button>
+          <button onclick="deleteTask(${index})" style="background:#e53935;color:white;">Delete</button>
+        </div>
+      `;
+      taskList.appendChild(taskItem);
+    });
+  }
+
+  function editTask(index) {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const task = tasks[index];
+
+    document.getElementById('task').value = task.task;
+    document.getElementById('email').value = task.email;
+    document.getElementById('category').value = task.category;
+    document.getElementById('date').value = task.date;
+    document.getElementById('mobile').value = task.mobile;
+    document.getElementById('address').value = task.address;
+
+    editingIndex = index;
+    taskForm.querySelector('button').innerText = "Update Task";
+  }
+
+  function deleteTask(index) {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.splice(index, 1);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+
+  exitBtn.addEventListener('click', () => {
+    if (confirm("Are you sure you want to clear all tasks?")) {
+      localStorage.removeItem('tasks');
+      taskList.innerHTML = '';
+      taskForm.reset();
+      editingIndex = null;
+    }
+  });
+</script>
+
+
+
+
+    </body>
+</html>
